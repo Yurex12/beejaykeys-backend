@@ -49,6 +49,10 @@ app.use(upload.single('image'));
 app.use(cookieParser());
 
 // Routes middleware
+app.get('/', (req, res) => {
+  res.send('API is running...');
+});
+
 app.use('/api/users', userRoutes);
 app.use('/api/faqs', faqRoutes);
 app.use('/api/links', linkRoutes);
