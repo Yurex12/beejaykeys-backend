@@ -3,25 +3,22 @@ import { StatusCodes } from 'http-status-codes';
 import jwt from 'jsonwebtoken';
 
 export function validateToken(req: Request, res: Response, next: NextFunction) {
-  const authHeader = req.headers.authorization;
+  const token = req.cookies.accessToken;
 
-  if (!authHeader || !authHeader.startsWith('Bearer')) {
+  if (!token) {
     res.status(StatusCodes.UNAUTHORIZED);
-    throw new Error('No token was found.');
+    throw new Error('Something went wrong. kindly refresh this page');
   }
-
-  const token = authHeader.split(' ')[1];
 
   try {
     const decodedToken: any = jwt.verify(
       token,
-      process.env.ACCESS_TOKEN_SECRET as string
+      process.env.JWT_TOKEN_SECRET as string
     );
     req.user = decodedToken.user;
     next();
   } catch (error) {
-    console.error(error);
-    res.status(404);
-    throw new Error('Token Verification failed.');
+    res.status(401);
+    throw new Error('Something went wrong. kindly refresh this page');
   }
 }

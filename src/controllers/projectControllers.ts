@@ -1,11 +1,12 @@
 import { NextFunction, Response, Request } from 'express';
-import { StatusCodes } from 'http-status-codes';
+import { NO_CONTENT, StatusCodes } from 'http-status-codes';
 import expressAsyncHandler from 'express-async-handler';
 import Project from '../models/projectModel';
 import { TprojectSchema } from '../schema/projectSchema';
+import { imagekit } from '../utils/imagekit';
 
-//@desc Get all products
-//@route GET api/products
+//@desc Get all project
+//@route GET api/project
 //@access public
 
 export const getProjects = expressAsyncHandler(
@@ -40,16 +41,38 @@ export const getProject = expressAsyncHandler(
 
 export const createProject = expressAsyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
-    const data = req.body as TprojectSchema;
+    const { workedAs, ...otherValues } = req.body as TprojectSchema;
 
-    const projectExists = await Project.findOne({ name: data.name });
-
-    if (projectExists) {
-      res.status(StatusCodes.METHOD_NOT_ALLOWED);
-      throw new Error(`Project with the name ${data.name} already exist.`);
+    if (!req.file) {
+      res.status(StatusCodes.NOT_FOUND);
+      throw new Error('No file provided or file type is not allowed.');
     }
 
-    const project = await Project.create(data);
+    const base64String = `data:${
+      req.file.mimetype
+    };base64,${req.file.buffer.toString('base64')}`;
+
+    let imageResult;
+
+    try {
+      imageResult = await imagekit.upload({
+        file: base64String,
+        fileName: req.file.originalname,
+        folder: '/beejakeys',
+      });
+    } catch {
+      res.status(StatusCodes.INTERNAL_SERVER_ERROR);
+      throw new Error('Network Error. Make sure your mobile data is on.');
+    }
+
+    const project = await Project.create({
+      ...otherValues,
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      workedAs: JSON.parse(workedAs),
+      image: imageResult.url,
+      imageId: imageResult.fileId,
+    });
     res
       .status(StatusCodes.CREATED)
       .json({ message: 'project created succesfully.', project });
@@ -63,7 +86,7 @@ export const createProject = expressAsyncHandler(
 export const updateProject = expressAsyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
     const { id } = req.params as RequestParams;
-    const { description, imageUrl, name, pitch, status, workedAs } =
+    const { description, name, pitch, status, workedAs } =
       req.body as TprojectSchema;
 
     const project = await Project.findById(id);
@@ -73,19 +96,44 @@ export const updateProject = expressAsyncHandler(
       throw new Error('project does not exist.');
     }
 
-    const projectExists = await Project.findOne({ name });
-
-    if (projectExists) {
-      res.status(StatusCodes.METHOD_NOT_ALLOWED);
-      throw new Error(`Project with the name ${name} already exist.`);
-    }
-
     project.name = name;
     project.description = description;
     project.status = status;
-    project.imageUrl = imageUrl;
-    project.workedAs = workedAs;
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    project.workedAs = JSON.parse(workedAs);
     project.pitch = pitch;
+
+    if (req.file) {
+      // Delete previous image
+      try {
+        await imagekit.deleteFile(project.imageId);
+      } catch (error) {
+        console.log(error);
+
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR);
+        throw new Error('Something went wrong. Please try again later.');
+      }
+      // Convert to base64String and upload
+      const base64String = `data:${
+        req.file.mimetype
+      };base64,${req.file.buffer.toString('base64')}`;
+
+      let imageResult;
+      try {
+        imageResult = await imagekit.upload({
+          file: base64String,
+          fileName: req.file.originalname,
+          folder: '/beejakeys',
+        });
+      } catch (error) {
+        console.log(error);
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR);
+        throw new Error('Failed to upload image. Please try again later.');
+      }
+      project.image = imageResult.url;
+      project.imageId = imageResult.fileId;
+    }
 
     const result = await project.save();
     res
@@ -108,7 +156,38 @@ export const deleteProject = expressAsyncHandler(
       res.status(StatusCodes.NOT_FOUND);
       throw new Error('project does not exist.');
     }
+
+    try {
+      await imagekit.deleteFile(project.imageId);
+    } catch {
+      res.status(StatusCodes.INTERNAL_SERVER_ERROR);
+      throw new Error('Failed to delete Project. Please try again later.');
+    }
+
     await project.deleteOne({ _id: id });
     res.status(200).json({ message: `project deleteted succesfully.` });
+  }
+);
+
+//@desc Increment views project
+//@route DELETE api/increment-views/:id
+//@access public
+
+export const incremetProjectViews = expressAsyncHandler(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const { id } = req.params as RequestParams;
+
+    const project = await Project.findByIdAndUpdate(
+      id,
+      { $inc: { views: 1 } },
+      { new: true, timestamps: false }
+    );
+
+    if (!project) {
+      res.status(StatusCodes.NO_CONTENT);
+      throw new Error('No project found.');
+    }
+
+    res.status(StatusCodes.OK).json(project);
   }
 );

@@ -5,6 +5,7 @@ type User = {
 declare namespace Express {
   export interface Request {
     user: User;
+    file: any;
   }
 }
 
@@ -33,7 +34,11 @@ type UserRequestBody = {
   email: string;
   username: string;
   password: string;
+  image: string;
+  imageId: string;
 };
+
+type UserPasswordRequestBody = { oldPassword: string; newPassword: string };
 
 // type ServiceRequestBody = {
 //   description:

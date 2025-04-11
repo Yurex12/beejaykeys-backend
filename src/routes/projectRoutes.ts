@@ -5,6 +5,7 @@ import {
   deleteProject,
   getProject,
   getProjects,
+  incremetProjectViews,
   updateProject,
 } from '../controllers/projectControllers';
 import { validateToken } from '../middlewares/validateTokenHandler';
@@ -21,5 +22,7 @@ router
   .get('/:id', getProject)
   .put('/:id', validateToken, validateData(projectSchema), updateProject)
   .delete('/:id', validateToken, deleteProject);
+
+router.patch('/increment-views/:id', incremetProjectViews);
 
 export default router;

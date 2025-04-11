@@ -13,9 +13,11 @@ import { messageSchema } from '../schema/message';
 const router = express.Router();
 
 router
-  .get('/', getMessages)
-  .post('/', validateToken, validateData(messageSchema), createMessage);
+  .get('/', validateToken, getMessages)
+  .post('/', validateData(messageSchema), createMessage);
 
-router.get('/:id', getMessage).delete('/:id', validateToken, deleteMessage);
+router
+  .get('/:id', validateToken, getMessage)
+  .delete('/:id', validateToken, deleteMessage);
 
 export default router;

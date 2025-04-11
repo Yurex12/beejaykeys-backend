@@ -15,6 +15,14 @@ const userModel = new Schema(
       type: String,
       required: true,
     },
+    image: {
+      type: String,
+      required: true,
+    },
+    imageId: {
+      type: String,
+      required: true,
+    },
   },
   { timestamps: true }
 );
