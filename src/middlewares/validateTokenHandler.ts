@@ -7,7 +7,7 @@ export function validateToken(req: Request, res: Response, next: NextFunction) {
 
   if (!token) {
     res.status(StatusCodes.UNAUTHORIZED);
-    throw new Error('Something went wrong. kindly refresh this page');
+    throw new Error('Token not found');
   }
 
   try {
@@ -19,6 +19,6 @@ export function validateToken(req: Request, res: Response, next: NextFunction) {
     next();
   } catch (error) {
     res.status(401);
-    throw new Error('Something went wrong. kindly refresh this page');
+    throw new Error('Token has expired.');
   }
 }

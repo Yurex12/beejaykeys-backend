@@ -10,7 +10,7 @@ function validateToken(req, res, next) {
     const token = req.cookies.accessToken;
     if (!token) {
         res.status(http_status_codes_1.StatusCodes.UNAUTHORIZED);
-        throw new Error('Something went wrong. kindly refresh this page');
+        throw new Error('Token not found');
     }
     try {
         const decodedToken = jsonwebtoken_1.default.verify(token, process.env.JWT_TOKEN_SECRET);
@@ -19,6 +19,6 @@ function validateToken(req, res, next) {
     }
     catch (error) {
         res.status(401);
-        throw new Error('Something went wrong. kindly refresh this page');
+        throw new Error('Token has expired.');
     }
 }
