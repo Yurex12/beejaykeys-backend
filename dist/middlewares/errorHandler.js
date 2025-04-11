@@ -10,7 +10,7 @@ const errorHandler = (err, req, res) => {
     }
     res.status(statusCode).json({
         message: message || 'Internal Server Error',
-        stack: process.env.NODE_ENV === 'development' ? err.stack : null,
+        stack: process.env.NODE_ENV !== 'production' ? err.stack : null,
     });
 };
 exports.errorHandler = errorHandler;
