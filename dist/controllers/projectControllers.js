@@ -96,15 +96,7 @@ exports.updateProject = (0, express_async_handler_1.default)((req, res, next) =>
     project.workedAs = JSON.parse(workedAs);
     project.pitch = pitch;
     if (req.file) {
-        // Delete previous image
-        try {
-            yield imagekit_1.imagekit.deleteFile(project.imageId);
-        }
-        catch (error) {
-            console.log(error);
-            res.status(http_status_codes_1.StatusCodes.INTERNAL_SERVER_ERROR);
-            throw new Error('Something went wrong. Please try again later.');
-        }
+        // upload new image first
         // Convert to base64String and upload
         const base64String = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
         let imageResult;
@@ -116,9 +108,17 @@ exports.updateProject = (0, express_async_handler_1.default)((req, res, next) =>
             });
         }
         catch (error) {
-            console.log(error);
             res.status(http_status_codes_1.StatusCodes.INTERNAL_SERVER_ERROR);
             throw new Error('Failed to upload image. Please try again later.');
+        }
+        // Delete previous image
+        try {
+            yield imagekit_1.imagekit.deleteFile(project.imageId);
+        }
+        catch (error) {
+            console.log(process.env.NODE_ENV === 'production'
+                ? null
+                : 'Image deletion failed due some issue, try deleting from your imagekit dashboard.');
         }
         project.image = imageResult.url;
         project.imageId = imageResult.fileId;
@@ -138,15 +138,20 @@ exports.deleteProject = (0, express_async_handler_1.default)((req, res, next) =>
         res.status(http_status_codes_1.StatusCodes.NOT_FOUND);
         throw new Error('project does not exist.');
     }
+    yield project.deleteOne({ _id: id });
+    res.status(200).json({ message: `project deleteted succesfully.` });
     try {
         yield imagekit_1.imagekit.deleteFile(project.imageId);
     }
     catch (_a) {
-        res.status(http_status_codes_1.StatusCodes.INTERNAL_SERVER_ERROR);
-        throw new Error('Failed to delete Project. Please try again later.');
+        // res.status(StatusCodes.INTERNAL_SERVER_ERROR);
+        // throw new Error(
+        //   'Image deletion failed due some issue, try deleting from your imagekit dashboard.'
+        // );
+        console.log(process.env.NODE_ENV === 'production'
+            ? null
+            : 'Image deletion failed due some issue, try deleting from your imagekit dashboard.');
     }
-    yield project.deleteOne({ _id: id });
-    res.status(200).json({ message: `project deleteted succesfully.` });
 }));
 //@desc Increment views project
 //@route DELETE api/increment-views/:id

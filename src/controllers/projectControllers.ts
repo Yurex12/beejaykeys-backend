@@ -105,15 +105,7 @@ export const updateProject = expressAsyncHandler(
     project.pitch = pitch;
 
     if (req.file) {
-      // Delete previous image
-      try {
-        await imagekit.deleteFile(project.imageId);
-      } catch (error) {
-        console.log(error);
-
-        res.status(StatusCodes.INTERNAL_SERVER_ERROR);
-        throw new Error('Something went wrong. Please try again later.');
-      }
+      // upload new image first
       // Convert to base64String and upload
       const base64String = `data:${
         req.file.mimetype
@@ -127,9 +119,19 @@ export const updateProject = expressAsyncHandler(
           folder: '/beejakeys',
         });
       } catch (error) {
-        console.log(error);
         res.status(StatusCodes.INTERNAL_SERVER_ERROR);
         throw new Error('Failed to upload image. Please try again later.');
+      }
+
+      // Delete previous image
+      try {
+        await imagekit.deleteFile(project.imageId);
+      } catch (error) {
+        console.log(
+          process.env.NODE_ENV === 'production'
+            ? null
+            : 'Image deletion failed due some issue, try deleting from your imagekit dashboard.'
+        );
       }
       project.image = imageResult.url;
       project.imageId = imageResult.fileId;
@@ -157,15 +159,22 @@ export const deleteProject = expressAsyncHandler(
       throw new Error('project does not exist.');
     }
 
+    await project.deleteOne({ _id: id });
+    res.status(200).json({ message: `project deleteted succesfully.` });
+
     try {
       await imagekit.deleteFile(project.imageId);
     } catch {
-      res.status(StatusCodes.INTERNAL_SERVER_ERROR);
-      throw new Error('Failed to delete Project. Please try again later.');
+      // res.status(StatusCodes.INTERNAL_SERVER_ERROR);
+      // throw new Error(
+      //   'Image deletion failed due some issue, try deleting from your imagekit dashboard.'
+      // );
+      console.log(
+        process.env.NODE_ENV === 'production'
+          ? null
+          : 'Image deletion failed due some issue, try deleting from your imagekit dashboard.'
+      );
     }
-
-    await project.deleteOne({ _id: id });
-    res.status(200).json({ message: `project deleteted succesfully.` });
   }
 );
 
