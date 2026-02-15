@@ -13,7 +13,7 @@ export function validateToken(req: Request, res: Response, next: NextFunction) {
   try {
     const decodedToken: any = jwt.verify(
       token,
-      process.env.JWT_TOKEN_SECRET as string
+      process.env.JWT_TOKEN_SECRET as string,
     );
     req.user = decodedToken.user;
     next();

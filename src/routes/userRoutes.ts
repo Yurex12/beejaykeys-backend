@@ -10,6 +10,7 @@ import {
 import { validateData } from '../middlewares/validation';
 import {
   userInfoSchema,
+  userLoginSchema,
   userPasswordSchema,
   userSchema,
 } from '../schema/userSchema';
@@ -17,26 +18,26 @@ import { validateToken } from '../middlewares/validateTokenHandler';
 
 const router = express.Router();
 
-router.post('/login', loginUser);
+router.post('/login', validateData(userLoginSchema), loginUser);
 
-router.get('/user/:id', validateToken, getUserData);
+router.get('/user-data', validateToken, getUserData);
 
 router.post('/register', validateData(userSchema), registerUser);
 
 router.post('/logout', logoutUser);
 
 router.patch(
-  '/update-info/:id',
+  '/update-info',
   validateToken,
   validateData(userInfoSchema),
-  updateUserInfo
+  updateUserInfo,
 );
 
 router.patch(
-  '/update-password/:id',
+  '/update-password',
   validateToken,
   validateData(userPasswordSchema),
-  updateUserPassword
+  updateUserPassword,
 );
 
 export default router;

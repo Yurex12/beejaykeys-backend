@@ -41,12 +41,16 @@ app.use(
   cors({
     origin: process.env.WEBSITE_URI,
     credentials: true,
-  })
+  }),
 );
 
 app.use(express.json());
 app.use(upload.single('image'));
 app.use(cookieParser());
+
+app.get('/api/health', (req, res) => {
+  res.send('OK');
+});
 
 // Routes middleware
 app.get('/', (req, res) => {

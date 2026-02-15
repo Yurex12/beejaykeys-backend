@@ -13,7 +13,7 @@ export const getProjects = expressAsyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
     const projects = await Project.find();
     res.status(StatusCodes.OK).json({ projects, message: 'Successful' });
-  }
+  },
 );
 
 //@desc Get project
@@ -32,7 +32,7 @@ export const getProject = expressAsyncHandler(
     }
 
     res.status(StatusCodes.OK).json({ message: `Successful.`, project });
-  }
+  },
 );
 
 //@desc Create project
@@ -76,7 +76,7 @@ export const createProject = expressAsyncHandler(
     res
       .status(StatusCodes.CREATED)
       .json({ message: 'project created succesfully.', project });
-  }
+  },
 );
 
 //@desc update project
@@ -130,7 +130,7 @@ export const updateProject = expressAsyncHandler(
         console.log(
           process.env.NODE_ENV === 'production'
             ? null
-            : 'Image deletion failed due some issue, try deleting from your imagekit dashboard.'
+            : 'Image deletion failed due some issue, try deleting from your imagekit dashboard.',
         );
       }
       project.image = imageResult.url;
@@ -141,7 +141,7 @@ export const updateProject = expressAsyncHandler(
     res
       .status(StatusCodes.OK)
       .json({ message: `project updated succesfully.`, result });
-  }
+  },
 );
 
 //@desc Delete project
@@ -172,10 +172,10 @@ export const deleteProject = expressAsyncHandler(
       console.log(
         process.env.NODE_ENV === 'production'
           ? null
-          : 'Image deletion failed due some issue, try deleting from your imagekit dashboard.'
+          : 'Image deletion failed due some issue, try deleting from your imagekit dashboard.',
       );
     }
-  }
+  },
 );
 
 //@desc Increment views project
@@ -189,7 +189,7 @@ export const incremetProjectViews = expressAsyncHandler(
     const project = await Project.findByIdAndUpdate(
       id,
       { $inc: { views: 1 } },
-      { new: true, timestamps: false }
+      { new: true, timestamps: false },
     );
 
     if (!project) {
@@ -198,5 +198,5 @@ export const incremetProjectViews = expressAsyncHandler(
     }
 
     res.status(StatusCodes.OK).json(project);
-  }
+  },
 );
