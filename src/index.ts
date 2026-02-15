@@ -48,13 +48,12 @@ app.use(express.json());
 app.use(upload.single('image'));
 app.use(cookieParser());
 
-app.get('/api/health', (req, res) => {
-  res.send('OK');
-});
-
-// Routes middleware
 app.get('/', (req, res) => {
   res.send('API is running...');
+});
+
+app.get('/api/health', (req, res) => {
+  res.send('OK');
 });
 
 app.use('/api/users', userRoutes);
