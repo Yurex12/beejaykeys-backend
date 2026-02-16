@@ -56,10 +56,6 @@ app.get('/api/health', (req, res) => {
   res.send('OK');
 });
 
-app.get('/health', (req, res) => {
-  res.send('OK');
-});
-
 app.use('/api/users', userRoutes);
 app.use('/api/faqs', faqRoutes);
 app.use('/api/links', linkRoutes);

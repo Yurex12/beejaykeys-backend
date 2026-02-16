@@ -44,9 +44,11 @@ app.use((0, cors_1.default)({
 app.use(express_1.default.json());
 app.use(upload.single('image'));
 app.use((0, cookie_parser_1.default)());
-// Routes middleware
 app.get('/', (req, res) => {
-    res.send('API is running...');
+    res.send('API is running - VERSION 2');
+});
+app.get('/api/health', (req, res) => {
+    res.send('OK');
 });
 app.use('/api/users', userRoutes_1.default);
 app.use('/api/faqs', faqRoutes_1.default);

@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.notFound = exports.errorHandler = void 0;
-const errorHandler = (err, req, res) => {
+const errorHandler = (err, req, res, next) => {
     let statusCode = res.statusCode === 200 ? 500 : res.statusCode;
     let message = err.message;
     if (err.name === 'CastError') {

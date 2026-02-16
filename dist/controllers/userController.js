@@ -39,7 +39,7 @@ exports.registerUser = (0, express_async_handler_1.default)((req, res, next) => 
         imageId,
     });
     res.status(http_status_codes_1.StatusCodes.CREATED).json({
-        message: 'Registration succesful.',
+        message: 'Registration successful.',
         userId: newUser._id.toString(),
     });
 }));
@@ -55,7 +55,7 @@ exports.loginUser = (0, express_async_handler_1.default)((req, res, next) => __a
     const user = yield userModel_1.default.findOne({ email });
     if (!user) {
         res.status(403);
-        throw new Error('No user was found');
+        throw new Error('Email or password is wrong.');
     }
     const passwordMatch = yield bcrypt_1.default.compare(password, user.password);
     if (!passwordMatch) {
@@ -63,26 +63,14 @@ exports.loginUser = (0, express_async_handler_1.default)((req, res, next) => __a
         throw new Error('Email or password is wrong.');
     }
     const accessToken = jsonwebtoken_1.default.sign({ user: { id: user._id } }, process.env.JWT_TOKEN_SECRET, { expiresIn: '30d' });
-    // Store refresh token in HTTP-only cookie
     res.cookie('accessToken', accessToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+        maxAge: 7 * 24 * 60 * 60 * 1000,
     });
-    // const accessToken = jwt.sign(
-    //   {
-    //     user: {
-    //       id: user._id,
-    //     },
-    //   },
-    //   process.env.ACCESS_TOKEN_SECRET as string,
-    //   {
-    //     expiresIn: '5m',
-    //   }
-    // );
     res.status(200).json({
-        message: 'Login succesful.',
+        message: 'Login successful.',
         user: {
             userId: user._id.toString(),
             username: user.username,
@@ -96,19 +84,19 @@ exports.loginUser = (0, express_async_handler_1.default)((req, res, next) => __a
 //@route POST api/users/logout
 //@access private
 exports.logoutUser = (0, express_async_handler_1.default)((req, res, next) => {
-    res.clearCookie('refreshToken');
+    res.clearCookie('accessToken');
     res.json({ message: 'Logged out' });
 });
 //@desc Update a user data
 //@route POST api/users/update-info/:id
 //@access private
 exports.updateUserInfo = (0, express_async_handler_1.default)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    const { id } = req.params;
+    const id = req.user.id;
     const { username, email } = req.body;
     const user = yield userModel_1.default.findById(id);
     if (!user) {
         res.status(http_status_codes_1.StatusCodes.NOT_FOUND);
-        throw new Error('project does not exist.');
+        throw new Error('user does not exist.');
     }
     user.username = username;
     user.email = email;
@@ -142,7 +130,7 @@ exports.updateUserInfo = (0, express_async_handler_1.default)((req, res, next) =
     }
     const result = yield user.save();
     res.status(http_status_codes_1.StatusCodes.OK).json({
-        message: `Profile updated succesfully.`,
+        message: `Profile updated successfully.`,
         user: {
             userId: result._id.toString(),
             email: result.email,
@@ -152,10 +140,10 @@ exports.updateUserInfo = (0, express_async_handler_1.default)((req, res, next) =
     });
 }));
 //@desc Update a user data
-//@route POST api/users/update-password/:id
+//@route POST api/users/update-password
 //@access private
 exports.updateUserPassword = (0, express_async_handler_1.default)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    const { id } = req.params;
+    const id = req.user.id;
     const { oldPassword, newPassword } = req.body;
     const user = yield userModel_1.default.findById(id);
     if (!user) {
@@ -171,27 +159,26 @@ exports.updateUserPassword = (0, express_async_handler_1.default)((req, res, nex
     user.password = newHashedPassword;
     yield user.save();
     res.status(http_status_codes_1.StatusCodes.OK).json({
-        message: `Password updated succesfully.`,
+        message: `Password updated successfully.`,
     });
 }));
 //@desc Update a user data
-//@route POST api/users/:id
+//@route POST api/users/
 //@access private
 exports.getUserData = (0, express_async_handler_1.default)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    const { id } = req.params;
+    const id = req.user.id;
     const user = yield userModel_1.default.findById(id);
     if (!user) {
         res.status(http_status_codes_1.StatusCodes.FORBIDDEN);
         throw new Error('User Does not exist.');
     }
     res.status(http_status_codes_1.StatusCodes.OK).json({
-        message: `Successfull`,
+        message: `Successful`,
         user: {
             userId: user._id.toString(),
             email: user.email,
             image: user.image,
             username: user.username,
         },
-        isAuthenticated: true,
     });
 }));
