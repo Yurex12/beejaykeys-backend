@@ -49,7 +49,7 @@ app.use(upload.single('image'));
 app.use(cookieParser());
 
 app.get('/', (req, res) => {
-  res.send('API is running...');
+  res.send('API is running - VERSION 2');
 });
 
 app.get('/api/health', (req, res) => {
