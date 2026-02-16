@@ -1,6 +1,6 @@
 import cors from 'cors';
 import dotenv from 'dotenv';
-import express from 'express';
+import express, { Request, Response } from 'express';
 import multer from 'multer';
 import cookieParser from 'cookie-parser';
 
@@ -48,7 +48,7 @@ app.use(express.json());
 app.use(upload.single('image'));
 app.use(cookieParser());
 
-app.get('/', (req, res) => {
+app.get('/', (req: Request, res: Response) => {
   res.send('API is running - VERSION 2');
 });
 
